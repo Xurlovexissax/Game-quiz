@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego: Evolución de la Computadora</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; }
+    .container { max-width: 500px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);}
+    h2 { text-align: center; }
+    #timer { font-size: 1.2em; margin-bottom: 10px; color: #333;}
+    .options { list-style: none; padding: 0;}
+    .options li { margin: 10px 0;}
+    .option-btn {
+      width: 100%; padding: 10px; font-size: 1em;
+      border: none; border-radius: 5px; background: #eee; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .option-btn.correct { background: #4caf50; color: #fff; }
+    .option-btn.incorrect { background: #f44336; color: #fff; }
+    .option-btn.show-correct { background: #2196f3; color: #fff; }
+    #next-btn { margin-top: 15px; padding: 10px 20px; font-size: 1em; border: none; background: #333; color: #fff; border-radius: 5px; cursor: pointer; display: none;}
+    #score { text-align: center; font-size: 1.3em; margin-top: 20px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Evolución de la Computadora</h2>
+    <div id="timer">Tiempo: 10s</div>
+    <div id="question"></div>
+    <ul class="options" id="options"></ul>
+    <button id="next-btn">Siguiente</button>
+    <div id="score"></div>
+  </div>
+
+  <script>
+    const preguntas = [
+      {
+        pregunta: "¿Quién es considerado el padre de la computación?",
+        opciones: ["Charles Babbage", "Alan Turing", "Bill Gates", "Ada Lovelace"],
+        correcta: 0
+      },
+      {
+        pregunta: "¿En qué año se inventó el ENIAC?",
+        opciones: ["1936", "1945", "1951", "1960"],
+        correcta: 1
+      },
+      {
+        pregunta: "¿Cuál fue la primera computadora electrónica de propósito general?",
+        opciones: ["Colossus", "ENIAC", "UNIVAC", "Z3"],
+        correcta: 1
+      },
+      {
+        pregunta: "¿Qué invento permitió el avance de las computadoras en la segunda generación?",
+        opciones: ["Transistor", "Válvula de vacío", "Microchip", "Disco duro"],
+        correcta: 0
+      },
+      {
+        pregunta: "¿Quién desarrolló el concepto de algoritmo en computación?",
+        opciones: ["Alan Turing", "Charles Babbage", "Ada Lovelace", "John von Neumann"],
+        correcta: 2
+      },
+      {
+        pregunta: "¿Qué caracteriza a las computadoras de tercera generación?",
+        opciones: ["Transistores", "Microprocesadores", "Circuitos integrados", "Pantalla táctil"],
+        correcta: 2
+      },
+      {
+        pregunta: "¿En qué década se popularizó el uso de las computadoras personales?",
+        opciones: ["1960", "1970", "1980", "1990"],
+        correcta: 2
+      },
+      {
+        pregunta: "¿Quién fundó Microsoft?",
+        opciones: ["Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Larry Page"],
+        correcta: 1
+      },
+      {
+        pregunta: "¿Cuál fue la primera computadora portátil exitosa?",
+        opciones: ["IBM PC", "Apple II", "Osborne 1", "Commodore 64"],
+        correcta: 2
+      },
+      {
+        pregunta: "¿Qué revolución tecnológica permitió la miniaturización de las computadoras?",
+        opciones: ["Invención del transistor", "Internet", "Inteligencia artificial", "Redes inalámbricas"],
+        correcta: 0
+      }
+    ];
+
+    let preguntaActual = 0;
+    let puntaje = 0;
+    let tiempo = 10;
+    let temporizador;
+    let respondido = false;
+
+    function mostrarPregunta() {
+      respondido = false;
+      document.getElementById("score").textContent = "";
+      document.getElementById("next-btn").style.display = "none";
+      tiempo = 10;
+      document.getElementById("timer").textContent = `Tiempo: ${tiempo}s`;
+      document.getElementById("question").textContent = preguntas[preguntaActual].pregunta;
+      const opcionesUl = document.getElementById("options");
+      opcionesUl.innerHTML = "";
+      preguntas[preguntaActual].opciones.forEach((opcion, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = opcion;
+        btn.className = "option-btn";
+        btn.onclick = () => seleccionarOpcion(i, btn);
+        const li = document.createElement("li");
+        li.appendChild(btn);
+        opcionesUl.appendChild(li);
+      });
+      temporizador = setInterval(actualizarTemporizador, 1000);
+    }
+
+    function actualizarTemporizador() {
+      tiempo--;
+      document.getElementById("timer").textContent = `Tiempo: ${tiempo}s`;
+      if (tiempo <= 0) {
+        clearInterval(temporizador);
+        mostrarRespuestas(-1); // No respondió
+      }
+    }
+
+    function seleccionarOpcion(indice, btn) {
+      if (respondido) return;
+      respondido = true;
+      clearInterval(temporizador);
+      mostrarRespuestas(indice);
+    }
+
+    function mostrarRespuestas(indiceSeleccionado) {
+      const opcionesBtns = document.querySelectorAll(".option-btn");
+      opcionesBtns.forEach((btn, i) => {
+        if (i === preguntas[preguntaActual].correcta) {
+          btn.classList.add("correct");
+        }
+        if (i === indiceSeleccionado && i !== preguntas[preguntaActual].correcta) {
+          btn.classList.add("incorrect");
+        }
+        if (indiceSeleccionado === -1 && i === preguntas[preguntaActual].correcta) {
+          btn.classList.add("show-correct");
+        }
+        btn.disabled = true;
+      });
+      if (indiceSeleccionado === preguntas[preguntaActual].correcta) {
+        puntaje++;
+      }
+      document.getElementById("next-btn").style.display = "block";
+      if (preguntaActual === preguntas.length - 1) {
+        document.getElementById("next-btn").textContent = "Ver resultado";
+      }
+    }
+
+    document.getElementById("next-btn").onclick = () => {
+      preguntaActual++;
+      if (preguntaActual < preguntas.length) {
+        mostrarPregunta();
+      } else {
+        mostrarResultado();
+      }
+    };
+
+    function mostrarResultado() {
+      document.getElementById("question").textContent = "";
+      document.getElementById("options").innerHTML = "";
+      document.getElementById("timer").textContent = "";
+      document.getElementById("next-btn").style.display = "none";
+      document.getElementById("score").textContent = `¡Juego terminado! Tu puntaje fue: ${puntaje} de ${preguntas.length}`;
+    }
+
+    // Inicializar juego
+    mostrarPregunta();
+  </script>
+</body>
+</html>
